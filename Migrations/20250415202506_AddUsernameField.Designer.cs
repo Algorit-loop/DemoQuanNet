@@ -11,8 +11,8 @@ using QuanNet.Data;
 namespace QuanNet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250415182551_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250415202506_AddUsernameField")]
+    partial class AddUsernameField
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,9 +103,16 @@ namespace QuanNet.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("Users");

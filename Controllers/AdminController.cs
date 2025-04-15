@@ -234,10 +234,16 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> UpdateUser(int userId, string name, string phoneNumber, decimal balance)
+    public async Task<IActionResult> UpdateUser(int userId, string username, string name, string phoneNumber, string? password, decimal balance)
     {
         var checkResult = CheckAdminAccess();
         if (checkResult != null) return checkResult;
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            TempData["Error"] = "Tài khoản không được để trống";
+            return RedirectToAction(nameof(Users));
+        }
 
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -258,6 +264,13 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Users));
         }
 
+        // Check if username exists for different user
+        if (await _context.Users.AnyAsync(u => u.Username == username && u.UserId != userId))
+        {
+            TempData["Error"] = "Tài khoản đã tồn tại";
+            return RedirectToAction(nameof(Users));
+        }
+
         // Check if phone number exists for different user
         if (await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber && u.UserId != userId))
         {
@@ -265,9 +278,17 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Users));
         }
 
+        user.Username = username;
         user.Name = name;
         user.PhoneNumber = phoneNumber;
         user.Balance = balance;
+        
+        // Only update password if a new one is provided
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            user.Password = password;
+        }
+
         await _context.SaveChangesAsync();
 
         TempData["Success"] = $"Đã cập nhật thông tin người dùng {name}";
@@ -326,5 +347,32 @@ public class AdminController : Controller
             .ToListAsync();
 
         return View(history);
+    }
+
+    // Revenue statistics
+    public async Task<IActionResult> Revenue()
+    {
+        var checkResult = CheckAdminAccess();
+        if (checkResult != null) return checkResult;
+
+        var computers = await _context.Computers
+            .Include(c => c.ComputerUsages.Where(cu => cu.EndTime != null))
+            .ToListAsync();
+
+        var statistics = computers.Select(c => {
+            var completedSessions = c.ComputerUsages.Where(cu => cu.EndTime != null);
+            return new ComputerRevenueViewModel
+            {
+                ComputerName = c.Name,
+                TotalRevenue = completedSessions.Sum(cu => cu.Amount ?? 0),
+                TotalSessions = completedSessions.Count(),
+                TotalUsageTime = TimeSpan.FromSeconds(completedSessions
+                    .Sum(cu => (cu.EndTime!.Value - cu.StartTime).TotalSeconds))
+            };
+        })
+        .OrderByDescending(s => s.TotalRevenue)
+        .ToList();
+
+        return View(statistics);
     }
 }

@@ -101,7 +101,8 @@
     {
         <script>
             function updateDuration() {
-                const startTime = new Date('@ViewBag.ActiveSession.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")');
+                // Convert UTC start time to local time
+                const startTime = new Date('@ViewBag.ActiveSession.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")Z');
                 const now = new Date();
                 const diff = now - startTime;
                 
@@ -112,10 +113,11 @@
                 const duration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 document.getElementById('duration').textContent = duration;
 
-                // Calculate estimated cost
+                // Calculate cost per second
                 const hourlyRate = @ViewBag.ActiveSession.Computer.HourlyRate;
-                const hoursUsed = diff / 3600000; // Convert milliseconds to hours
-                const estimatedCost = Math.ceil(hoursUsed * hourlyRate);
+                const secondlyRate = hourlyRate / 3600; // Convert hourly rate to per-second rate
+                const secondsUsed = Math.floor(diff / 1000); // Convert milliseconds to seconds
+                const estimatedCost = Math.ceil(secondsUsed * secondlyRate);
                 document.getElementById('estimatedCost').textContent = estimatedCost.toLocaleString('vi-VN') + ' VNĐ';
             }
 

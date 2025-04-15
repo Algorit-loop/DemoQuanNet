@@ -79,23 +79,10 @@ public class UserController : Controller
         }
 
         var computer = await _context.Computers.FindAsync(computerId);
-        if (computer == null)
+        if (computer == null || computer.Status != ComputerStatus.Available)
         {
-            TempData["Error"] = "Không tìm thấy máy này";
-            return RedirectToAction("CurrentSession");
-        }
-
-        if (computer.Status != ComputerStatus.Available)
-        {
-            string errorMessage = computer.Status switch
-            {
-                ComputerStatus.InUse => "Máy đang được sử dụng",
-                ComputerStatus.Maintenance => "Máy đang trong quá trình bảo trì",
-                ComputerStatus.OutOfOrder => "Máy đang hỏng",
-                _ => "Máy không khả dụng"
-            };
-            TempData["Error"] = errorMessage;
-            return RedirectToAction("CurrentSession");
+            TempData["Error"] = "Máy không khả dụng";
+            return RedirectToAction("AvailableComputers");
         }
 
         // Create new session
@@ -111,7 +98,6 @@ public class UserController : Controller
         _context.ComputerUsages.Add(usage);
         await _context.SaveChangesAsync();
 
-        TempData["Success"] = $"Bắt đầu sử dụng máy {computer.Name}";
         return RedirectToAction("CurrentSession");
     }
 

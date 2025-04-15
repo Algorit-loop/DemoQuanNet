@@ -21,16 +21,16 @@ public class ApplicationDbContext : DbContext
             // Create admin user
             var adminUser = new User
             {
-                Name = "Admin",
+                Username = "admin",
+                Name = "Admin", 
                 PhoneNumber = "admin",
-                Password = "admin123",
+                Password = "admin",
                 Balance = 0,
                 IsAdmin = true,
                 CreatedAt = DateTime.UtcNow
             };
             Users.Add(adminUser);
-            // await SaveChangesAsync();
-
+            
             // Create some sample computers
             var computers = new[]
             {
@@ -51,6 +51,10 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Configure User
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
         modelBuilder.Entity<User>()
             .HasIndex(u => u.PhoneNumber)
             .IsUnique();

@@ -17,42 +17,73 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Register()
     {
+        if (HttpContext.Session.GetInt32("UserId").HasValue)
+        {
+            return RedirectToAction("Index", "Home");
+        }
         return View();
     }
 
     [HttpPost]
     public async Task<IActionResult> Register(User user)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            user.CreatedAt = DateTime.UtcNow;
-            user.Balance = 0;
-            user.IsAdmin = false;
-            
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            return RedirectToAction("Index", "Home");
+            return View(user);
         }
-        return View(user);
+
+        // Kiểm tra username đã tồn tại
+        if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+        {
+            ModelState.AddModelError("Username", "Tên đăng nhập đã được sử dụng");
+            return View(user);
+        }
+
+        // Kiểm tra số điện thoại đã tồn tại
+        if (await _context.Users.AnyAsync(u => u.PhoneNumber == user.PhoneNumber))
+        {
+            ModelState.AddModelError("PhoneNumber", "Số điện thoại đã được đăng ký");
+            return View(user);
+        }
+
+        user.CreatedAt = DateTime.UtcNow;
+        user.Balance = 0;
+        user.IsAdmin = false;
+        
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+        
+        HttpContext.Session.SetInt32("UserId", user.UserId);
+        HttpContext.Session.SetString("IsAdmin", "False");
+
+        return RedirectToAction("Index", "Home");
     }
 
     [HttpGet]
     public IActionResult Login()
     {
+        if (HttpContext.Session.GetInt32("UserId").HasValue)
+        {
+            return RedirectToAction("Index", "Home");
+        }
         return View();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Login(string phoneNumber, string password)
+    public async Task<IActionResult> Login(string username, string password)
     {
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+        {
+            ModelState.AddModelError("", "Vui lòng nhập đầy đủ thông tin");
+            return View();
+        }
+
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber && u.Password == password);
+            .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
 
         if (user == null)
         {
-            ModelState.AddModelError("", "Invalid login attempt.");
+            ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không chính xác");
             return View();
         }
 

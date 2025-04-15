@@ -1,0 +1,40 @@
+@model IEnumerable<QuanNet.Models.ComputerRevenueViewModel>
+
+@{
+    ViewData["Title"] = "Thống kê doanh thu";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tên máy</th>
+                        <th>Tổng doanh thu</th>
+                        <th>Số phiên sử dụng</th>
+                        <th>Tổng thời gian sử dụng</th>
+                        <th>Doanh thu trung bình/phiên</th>
+                        <th>Thời gian trung bình/phiên</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var stat in Model)
+                    {
+                        <tr>
+                            <td>@stat.ComputerName</td>
+                            <td>@stat.TotalRevenue.ToString("N0") VNĐ</td>
+                            <td>@stat.TotalSessions</td>
+                            <td>@($"{(int)stat.TotalUsageTime.TotalHours}:{stat.TotalUsageTime.Minutes:D2}:{stat.TotalUsageTime.Seconds:D2}")</td>
+                            <td>@stat.AverageRevenuePerSession.ToString("N0") VNĐ</td>
+                            <td>@($"{(int)stat.AverageTimePerSession.TotalHours}:{stat.AverageTimePerSession.Minutes:D2}:{stat.AverageTimePerSession.Seconds:D2}")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -86,6 +86,7 @@
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/QuanNet.MvcApplicationPartsAssemblyInfo.cache
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/QuanNet.RazorAssemblyInfo.cache
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/QuanNet.RazorAssemblyInfo.cs
+/home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/QuanNet.sourcelink.json
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/staticwebassets.build.json
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/staticwebassets.development.json
 /home/algorit/Desktop/Project/QuanNet/obj/Debug/net8.0/staticwebassets/msbuild.QuanNet.Microsoft.AspNetCore.StaticWebAssets.props

@@ -1,0 +1,81 @@
+@model IEnumerable<QuanNet.Models.Computer>
+
+@{
+    ViewData["Title"] = "Danh sách máy";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                Hiện không có máy nào trong hệ thống.
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var computer in Model)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">@computer.Name</h5>
+                                <p class="card-text">
+                                    Giá: <strong>@computer.HourlyRate.ToString("N0") VNĐ/giờ</strong>
+                                </p>
+                                <p class="card-text">
+                                    Trạng thái: 
+                                    @switch (computer.Status)
+                                    {
+                                        case ComputerStatus.Available:
+                                            <span class="badge bg-success">Sẵn sàng</span>
+                                            break;
+                                        case ComputerStatus.InUse:
+                                            <span class="badge bg-primary">Đang sử dụng</span>
+                                            break;
+                                        case ComputerStatus.Maintenance:
+                                            <span class="badge bg-warning text-dark">Đang bảo trì</span>
+                                            break;
+                                        case ComputerStatus.OutOfOrder:
+                                            <span class="badge bg-danger">Đang hỏng</span>
+                                            break;
+                                    }
+                                </p>
+                                @if (computer.Status == ComputerStatus.Available)
+                                {
+                                    <form asp-action="StartSession" method="post">
+                                        <input type="hidden" name="computerId" value="@computer.ComputerId" />
+                                        <button type="submit" class="btn btn-primary">
+                                            Bắt đầu sử dụng
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary" disabled>
+                                        @switch (computer.Status)
+                                        {
+                                            case ComputerStatus.InUse:
+                                                <text>Đang có người sử dụng</text>
+                                                break;
+                                            case ComputerStatus.Maintenance:
+                                                <text>Đang trong quá trình bảo trì</text>
+                                                break;
+                                            case ComputerStatus.OutOfOrder:
+                                                <text>Máy đang hỏng</text>
+                                                break;
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

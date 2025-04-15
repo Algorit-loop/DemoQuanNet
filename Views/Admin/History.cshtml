@@ -1,0 +1,62 @@
+@model IEnumerable<QuanNet.Models.ComputerUsageViewModel>
+
+@{
+    ViewData["Title"] = "Lịch sử sử dụng";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Số điện thoại</th>
+                        <th>Máy</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                        <th>Thời gian sử dụng</th>
+                        <th>Số tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usage in Model)
+                    {
+                        <tr>
+                            <td>@usage.UserName</td>
+                            <td>@usage.PhoneNumber</td>
+                            <td>@usage.ComputerName</td>
+                            <td>@usage.StartTime.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td>
+                                @(usage.EndTime?.ToString("dd/MM/yyyy HH:mm:ss") ?? "Đang sử dụng")
+                            </td>
+                            <td>
+                                @{
+                                    var duration = usage.EndTime.HasValue
+                                        ? usage.EndTime.Value - usage.StartTime
+                                        : DateTime.UtcNow - usage.StartTime;
+                                    @duration.ToString(@"hh\:mm\:ss")
+                                }
+                            </td>
+                            <td>@usage.Amount.ToString("N0") VNĐ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto-refresh every minute to update "Đang sử dụng" sessions
+            setInterval(function() {
+                location.reload();
+            }, 60000);
+        });
+    </script>
+}

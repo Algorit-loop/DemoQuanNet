@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Quản trị";
+}
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quản lý máy tính</h5>
+                <p class="card-text">Thêm, sửa, xóa và quản lý trạng thái máy tính</p>
+                <a asp-action="Computers" class="btn btn-primary">Quản lý máy tính</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quản lý người dùng</h5>
+                <p class="card-text">Xem và quản lý thông tin người dùng</p>
+                <a asp-action="Users" class="btn btn-primary">Quản lý người dùng</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Lịch sử sử dụng</h5>
+                <p class="card-text">Xem lịch sử sử dụng máy của người dùng</p>
+                <a asp-action="UsageHistory" class="btn btn-primary">Xem lịch sử</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Thống kê doanh thu</h5>
+                <p class="card-text">Xem báo cáo doanh thu theo máy và thời gian</p>
+                <a asp-action="Revenue" class="btn btn-primary">Xem doanh thu</a>
+            </div>
+        </div>
+    </div>
+</div>

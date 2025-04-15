@@ -1,0 +1,111 @@
+@model IEnumerable<QuanNet.Models.User>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Họ tên</th>
+                        <th>Số điện thoại</th>
+                        <th>Số dư</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr data-id="@user.UserId" data-name="@user.Name" data-phone="@user.PhoneNumber" data-balance="@user.Balance">
+                            <td>@user.Name</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>@user.Balance.ToString("N0") VNĐ</td>
+                            <td>@user.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="editUser(@user.UserId)"
+                                            data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                        Sửa
+                                    </button>
+                                    <form asp-action="DeleteUser" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa người dùng \'@user.Name\'?')">
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Xóa
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpdateUser" method="post">
+                <input type="hidden" id="editUserId" name="userId">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sửa thông tin người dùng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Họ tên</label>
+                        <input type="text" class="form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhoneNumber" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" id="editPhoneNumber" name="phoneNumber" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editBalance" class="form-label">Số dư (VNĐ)</label>
+                        <input type="number" class="form-control" id="editBalance" name="balance" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editUser(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editName').value = row.getAttribute('data-name');
+            document.getElementById('editPhoneNumber').value = row.getAttribute('data-phone');
+            document.getElementById('editBalance').value = row.getAttribute('data-balance');
+        }
+    </script>
+}

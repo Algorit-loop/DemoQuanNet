@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>@ViewData["Title"]</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="phoneNumber">Số điện thoại</label>
+                        <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="password">Mật khẩu</label>
+                        <input type="password" class="form-control" id="password" name="password" required />
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                        <a asp-action="Register" class="btn btn-link">Đăng ký tài khoản mới</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

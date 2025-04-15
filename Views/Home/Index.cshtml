@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="row">
+    @if (ViewBag.UserName != null && Context.Session.GetString("IsAdmin") != "True")
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin tài khoản</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["Error"]
+                        </div>
+                    }
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["Success"]
+                        </div>
+                    }
+
+                    <p class="card-text">Xin chào, <strong>@ViewBag.UserName</strong></p>
+                    <p class="card-text">Số dư: <strong>@ViewBag.Balance.ToString("N0") VNĐ</strong></p>
+                    
+                    <!-- Add Balance Form -->
+                    <form asp-controller="User" asp-action="AddBalance" method="post" class="mt-3">
+                        <div class="input-group">
+                            <select name="amount" class="form-select" required>
+                                <option value="">Chọn mệnh giá</option>
+                                <option value="5000">5,000 VNĐ</option>
+                                <option value="10000">10,000 VNĐ</option>
+                                <option value="20000">20,000 VNĐ</option>
+                                <option value="30000">30,000 VNĐ</option>
+                                <option value="50000">50,000 VNĐ</option>
+                                <option value="100000">100,000 VNĐ</option>
+                                <option value="200000">200,000 VNĐ</option>
+                                <option value="500000">500,000 VNĐ</option>
+                            </select>
+                            <button class="btn btn-primary" type="submit">Nạp tiền</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @if (ViewBag.ActiveSession != null)
+        {
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Phiên đang sử dụng</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Máy: <strong>@ViewBag.ActiveSession.Computer.Name</strong></p>
+                        <p>Bắt đầu: <strong>@ViewBag.ActiveSession.StartTime.ToString("dd/MM/yyyy HH:mm:ss")</strong></p>
+                        <p>Thời gian sử dụng: <strong><span id="duration"></span></strong></p>
+                        <p>Tạm tính: <strong><span id="estimatedCost">...</span></strong></p>
+                        
+                        <form asp-controller="User" asp-action="EndSession" method="post" class="mt-3">
+                            <button type="submit" class="btn btn-danger">Kết thúc phiên</button>
+                            <a asp-controller="User" asp-action="CurrentSession" class="btn btn-info">Chi tiết</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Máy có sẵn</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Có <strong>@ViewBag.AvailableComputersCount máy</strong> đang rảnh</p>
+                        <a asp-controller="User" asp-action="AvailableComputers" class="btn btn-primary">Xem danh sách máy</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-md-6 offset-md-3 text-center">
+            <h1 class="display-4 mb-4">Chào mừng đến Quán Net</h1>
+            <div class="d-grid gap-3">
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">Đăng nhập</a>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">Đăng ký</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @if (ViewBag.ActiveSession != null)
+    {
+        <script>
+            function updateDuration() {
+                const startTime = new Date('@ViewBag.ActiveSession.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")');
+                const now = new Date();
+                const diff = now - startTime;
+                
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                const duration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                document.getElementById('duration').textContent = duration;
+
+                // Calculate estimated cost
+                const hourlyRate = @ViewBag.ActiveSession.Computer.HourlyRate;
+                const hoursUsed = diff / 3600000; // Convert milliseconds to hours
+                const estimatedCost = Math.ceil(hoursUsed * hourlyRate);
+                document.getElementById('estimatedCost').textContent = estimatedCost.toLocaleString('vi-VN') + ' VNĐ';
+            }
+
+            setInterval(updateDuration, 1000);
+            updateDuration();
+        </script>
+    }
+}

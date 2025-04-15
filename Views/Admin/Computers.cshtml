@@ -1,0 +1,171 @@
+@model IEnumerable<QuanNet.Models.Computer>
+
+@{
+    ViewData["Title"] = "Quản lý máy tính";
+}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>@ViewData["Title"]</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addComputerModal">
+            Thêm máy mới
+        </button>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tên máy</th>
+                        <th>Trạng thái</th>
+                        <th>Giá/giờ</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var computer in Model)
+                    {
+                        <tr data-id="@computer.ComputerId" data-name="@computer.Name" data-rate="@computer.HourlyRate" data-status="@((int)computer.Status)">
+                            <td>@computer.Name</td>
+                            <td>
+                                @switch (computer.Status)
+                                {
+                                    case ComputerStatus.Available:
+                                        <span class="badge bg-success">Rảnh</span>
+                                        break;
+                                    case ComputerStatus.InUse:
+                                        <span class="badge bg-primary">Đang sử dụng</span>
+                                        break;
+                                    case ComputerStatus.Maintenance:
+                                        <span class="badge bg-warning">Bảo trì</span>
+                                        break;
+                                    case ComputerStatus.OutOfOrder:
+                                        <span class="badge bg-danger">Hỏng</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@computer.HourlyRate.ToString("N0") VNĐ</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary" onclick="editComputer(@computer.ComputerId)">
+                                        Sửa
+                                    </button>
+                                    @if (computer.Status == ComputerStatus.InUse)
+                                    {
+                                        <form asp-action="EndSession" method="post" class="d-inline">
+                                            <input type="hidden" name="computerId" value="@computer.ComputerId" />
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                Kết thúc phiên
+                                            </button>
+                                        </form>
+                                    }
+                                    <form asp-action="DeleteComputer" method="post" class="d-inline" 
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa máy \'@computer.Name\'?')">
+                                        <input type="hidden" name="id" value="@computer.ComputerId" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Xóa
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Computer Modal -->
+<div class="modal fade" id="addComputerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddComputer" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm máy mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên máy</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hourlyRate" class="form-label">Giá/giờ (VNĐ)</label>
+                        <input type="number" class="form-control" id="hourlyRate" name="hourlyRate" 
+                               min="1000" step="1000" value="15000" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Thêm máy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Computer Modal -->
+<div class="modal fade" id="editComputerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpdateComputer" method="post">
+                <input type="hidden" id="editComputerId" name="computerId">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sửa thông tin máy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Tên máy</label>
+                        <input type="text" class="form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHourlyRate" class="form-label">Giá/giờ (VNĐ)</label>
+                        <input type="number" class="form-control" id="editHourlyRate" name="hourlyRate" 
+                               min="1000" step="1000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="editStatus" name="status">
+                            <option value="0">Rảnh</option>
+                            <option value="2">Bảo trì</option>
+                            <option value="3">Hỏng</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editComputer(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            document.getElementById('editComputerId').value = id;
+            document.getElementById('editName').value = row.getAttribute('data-name');
+            document.getElementById('editHourlyRate').value = row.getAttribute('data-rate');
+            document.getElementById('editStatus').value = row.getAttribute('data-status');
+            
+            new bootstrap.Modal(document.getElementById('editComputerModal')).show();
+        }
+    </script>
+}

@@ -11,3 +11,10 @@ public class ComputerRevenueViewModel
     public decimal AverageRevenuePerSession => TotalSessions > 0 ? Math.Round(TotalRevenue / TotalSessions, 2) : 0;
     public TimeSpan AverageTimePerSession => TotalSessions > 0 ? TimeSpan.FromTicks(TotalUsageTime.Ticks / TotalSessions) : TimeSpan.Zero;
 }
+
+public class RevenueFilterViewModel
+{
+    public DateTime StartDate { get; set; } = DateTime.Today.AddDays(-7);
+    public DateTime EndDate { get; set; } = DateTime.Today;
+    public List<ComputerRevenueViewModel> Statistics { get; set; } = new();
+}

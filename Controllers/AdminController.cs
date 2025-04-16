@@ -106,19 +106,20 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Computers));
         }
 
-        var existingComputer = await _context.Computers.FindAsync(computer.ComputerId);
+        var existingComputer = await _context.Computers
+            .Include(c => c.ComputerUsages.Where(cu => cu.EndTime == null))
+            .FirstOrDefaultAsync(c => c.ComputerId == computer.ComputerId);
+
         if (existingComputer == null)
         {
             TempData["Error"] = "Không tìm thấy máy";
             return RedirectToAction(nameof(Computers));
         }
 
-        // Don't allow changing status of computer in use unless it's being marked as out of order
-        if (existingComputer.Status == ComputerStatus.InUse && 
-            computer.Status != ComputerStatus.InUse && 
-            computer.Status != ComputerStatus.OutOfOrder)
+        // Prevent editing computer that is in use
+        if (existingComputer.Status == ComputerStatus.InUse)
         {
-            TempData["Error"] = "Không thể thay đổi trạng thái máy đang sử dụng";
+            TempData["Error"] = "Không thể chỉnh sửa máy đang được sử dụng";
             return RedirectToAction(nameof(Computers));
         }
 
@@ -128,6 +129,7 @@ public class AdminController : Controller
 
         await _context.SaveChangesAsync();
         TempData["Success"] = $"Đã cập nhật máy {computer.Name}";
+        
         return RedirectToAction(nameof(Computers));
     }
 
@@ -350,16 +352,29 @@ public class AdminController : Controller
     }
 
     // Revenue statistics
-    public async Task<IActionResult> Revenue()
+    public async Task<IActionResult> Revenue(DateTime? startDate = null, DateTime? endDate = null)
     {
         var checkResult = CheckAdminAccess();
         if (checkResult != null) return checkResult;
 
+        var model = new RevenueFilterViewModel
+        {
+            StartDate = startDate ?? DateTime.Today.AddDays(-7),
+            EndDate = endDate ?? DateTime.Today
+        };
+
+        // Normalize dates to start and end of day
+        var startDateTime = model.StartDate.Date;
+        var endDateTime = model.EndDate.Date.AddDays(1).AddTicks(-1);
+
         var computers = await _context.Computers
-            .Include(c => c.ComputerUsages.Where(cu => cu.EndTime != null))
+            .Include(c => c.ComputerUsages.Where(cu => 
+                cu.EndTime != null && 
+                cu.StartTime.Date >= startDateTime.Date && 
+                cu.StartTime.Date <= endDateTime.Date))
             .ToListAsync();
 
-        var statistics = computers.Select(c => {
+        model.Statistics = computers.Select(c => {
             var completedSessions = c.ComputerUsages.Where(cu => cu.EndTime != null);
             return new ComputerRevenueViewModel
             {
@@ -373,6 +388,6 @@ public class AdminController : Controller
         .OrderByDescending(s => s.TotalRevenue)
         .ToList();
 
-        return View(statistics);
+        return View(model);
     }
 }

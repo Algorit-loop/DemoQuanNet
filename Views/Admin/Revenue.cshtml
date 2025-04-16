@@ -1,4 +1,4 @@
-@model IEnumerable<QuanNet.Models.ComputerRevenueViewModel>
+@model QuanNet.Models.RevenueFilterViewModel
 
 @{
     ViewData["Title"] = "Thống kê doanh thu";
@@ -9,6 +9,26 @@
         <h2>@ViewData["Title"]</h2>
     </div>
     <div class="card-body">
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="startDate" class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" 
+                       value="@Model.StartDate.ToString("yyyy-MM-dd")" required>
+            </div>
+            <div class="col-md-4">
+                <label for="endDate" class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="endDate" name="endDate" 
+                       value="@Model.EndDate.ToString("yyyy-MM-dd")" required>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Xem thống kê</button>
+            </div>
+        </form>
+
+        <div class="alert alert-info">
+            Thống kê doanh thu từ ngày @Model.StartDate.ToString("dd/MM/yyyy") đến ngày @Model.EndDate.ToString("dd/MM/yyyy")
+        </div>
+
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -22,7 +42,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var stat in Model)
+                    @foreach (var stat in Model.Statistics)
                     {
                         <tr>
                             <td>@stat.ComputerName</td>
@@ -34,7 +54,41 @@
                         </tr>
                     }
                 </tbody>
+                <tfoot>
+                    <tr class="table-info">
+                        <td><strong>Tổng cộng</strong></td>
+                        <td><strong>@Model.Statistics.Sum(s => s.TotalRevenue).ToString("N0") VNĐ</strong></td>
+                        <td><strong>@Model.Statistics.Sum(s => s.TotalSessions)</strong></td>
+                        <td><strong>@{
+                            var totalTime = TimeSpan.FromSeconds(Model.Statistics.Sum(s => s.TotalUsageTime.TotalSeconds));
+                            @($"{(int)totalTime.TotalHours}:{totalTime.Minutes:D2}:{totalTime.Seconds:D2}")
+                        }</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var startDate = document.getElementById('startDate');
+            var endDate = document.getElementById('endDate');
+
+            startDate.addEventListener('change', function() {
+                if (endDate.value && startDate.value > endDate.value) {
+                    endDate.value = startDate.value;
+                }
+            });
+
+            endDate.addEventListener('change', function() {
+                if (startDate.value && endDate.value < startDate.value) {
+                    startDate.value = endDate.value;
+                }
+            });
+        });
+    </script>
+}
